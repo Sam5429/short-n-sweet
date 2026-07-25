@@ -1,0 +1,14 @@
+sugar_cane, 161, 329
+ice_cream, 153, 344
+maple_syrup, 179, 327
+milk_chocolate, 131, 339
+milk_chocolate, 121, 337
+milk_chocolate, 141, 338
+nut, 189, 327
+sugar_cane, 124, 329
+sugar_cane, 175, 335
+sugar_cane, 142, 336
+white_chocolate, 204, 294
+gelatin, 213, 287
+corn_syrup, 184, 288
+maple_syrup, 154, 347
