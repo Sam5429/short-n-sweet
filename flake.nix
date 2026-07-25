@@ -1,4 +1,3 @@
-# flake.nix example
 {
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
@@ -7,15 +6,21 @@
     let
       system = "x86_64-linux";
       pkgs = import nixpkgs { inherit system; };
+      dotnetCombined = pkgs.dotnetCorePackages.combinePackages [
+        pkgs.dotnetCorePackages.sdk_9_0
+        pkgs.dotnetCorePackages.sdk_10_0
+      ];
     in
     {
       devShells.${system}.default = pkgs.mkShell {
-        packages = with pkgs; [
-          dotnetCorePackages.sdk_9_0
+        packages = [
+          dotnetCombined
           # For legacy .NET Framework 4.8 projects:
-          # mono
-          # msbuild
+          # pkgs.mono
+          # pkgs.msbuild
         ];
+
+        DOTNET_ROOT = "${dotnetCombined}";
       };
     };
 }

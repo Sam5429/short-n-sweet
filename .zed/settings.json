@@ -1,0 +1,11 @@
+{
+  "lsp": {
+    "roslyn": {
+      "binary": {
+        "env": {
+          "DOTNET_ROOT": "/nix/store/g71b78fm9vnjlwlwk3n81akk7mgf00s5-dotnet-combined/share/dotnet"
+        }
+      }
+    }
+  }
+}
