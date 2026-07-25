@@ -3,6 +3,8 @@ using Csharp.Client;
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using System.Reflection;
+using Csharp.Moving;
 
 public class Bot : IBot
 {
@@ -11,27 +13,24 @@ public class Bot : IBot
 
     public ActionBase? GetNextAction(GameState state)
     {
-        var nodePos = state.Bot.Position;
-        return new MoveAction(new Position(nodePos.X, nodePos.Y + 1));
-        // return new PlaceRadarAction(new Position(nodePos.X, nodePos.Y - 1));
-        // return new RespawnAction();
-        foreach (KeyValuePair<(int, int), Tile> pair in state.VisibleTiles)
+        // foreach (var resources in state.VisibleResources)
+        // {
+        //     Console.WriteLine($"{resources.Position}");
+        // }
+        PlayerInfo bot = state.Bot;
+        Resource target = state.VisibleResources.FirstOrDefault(r => r.CurrentAmount > 0);
+
+
+        if (Moving.ManhattanDist(bot.Position, target.Position) > 1)
         {
-            if (pair.Value.Position == nodePos)
-            {
-                Console.WriteLine($"Tile at {nodePos} has resource terrain: {pair.Value.Terrain}");
-            }
-            // Console.WriteLine($"{tile.HasRessource}");
-            // var tile = pair.Value;
-            // var ressource = null;
-            // if (tile.HasResource)
-            // {
-            //     ressource = tile.Resource;
-            // }
-            // Console.WriteLine($"{state.VisibleResources}");
+            Position new_p = Moving.GoTo(bot.Position, target.Position);
+            return new MoveAction(new_p);
+        } else if (bot.Inventory[0].Quantity > 100)
+        {
+            return new SendCompanionAction();
+        } else
+        {
+            return new GatherNodeAction(target.Position);
         }
-        return null;
-        // if (state.Bot.Position.X - 1 == state.VisibleTiles)
-        //     return new MoveAction(new Position(state.Bot.Position.X - 1, state.Bot.Position.Y));
     }
 }

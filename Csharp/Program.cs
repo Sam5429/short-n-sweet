@@ -13,4 +13,4 @@ Console.WriteLine("Starting JDIS Bot Client...");
 string URL_REMOTE = "https://jg26.jdis.ca";
 
 // Main loop listening for ticks.
-await BotRunner.RunAsync(URL_LOCAL, Bot.TOKEN);
+await BotRunner.RunAsync(URL_REMOTE, Bot.TOKEN);
