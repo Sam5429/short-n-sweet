@@ -59,12 +59,17 @@ public class Moving
         return Math.Abs(p1.X - p2.X) + Math.Abs(p1.Y - p2.Y);
     }
 
-    public static Position GoTo(Position start, Position end, Dictionary<(int, int), Tile> visibleTiles)
+    public static Position GoTo(Position start, Position end, Dictionary<(int, int), Tile> visibleTiles, List<Resource> visibleResources)
     {
         if (start.X == end.X && start.Y == end.Y)
         {
             return start;
         }
+
+        // Conversion en HashSet de positions pour un lookup O(1) dans le BFS
+        var resourcePositions = new HashSet<(int, int)>(
+            visibleResources.Select(r => (r.Position.X, r.Position.Y))
+        );
 
         var directions = new (int idx, int idy)[]
         {
@@ -87,7 +92,6 @@ public class Moving
         {
             var current = queue.Dequeue();
 
-            // Distance de cette tuile atteignable par rapport à la cible réelle
             double dist = Math.Sqrt(Math.Pow(current.x - end.X, 2) + Math.Pow(current.y - end.Y, 2));
             if (dist < bestDist)
             {
@@ -111,7 +115,11 @@ public class Moving
                 if (!visibleTiles.TryGetValue(next, out Tile tile))
                     continue;
 
-                if (tile.TerrainCategory == "Liquid" || tile.HasStructure)
+                if (tile.TerrainCategory != "Land" || tile.HasStructure || tile.HasEntity)
+                    continue;
+
+                // Une ressource visible sur la case bloque aussi le passage
+                if (resourcePositions.Contains(next))
                     continue;
 
                 visited.Add(next);
@@ -120,13 +128,11 @@ public class Moving
             }
         }
 
-        // Rien d'atteignable autour de start (même pas un pas) -> on reste sur place plutôt que de foncer dans un mur
         if (bestReachable == (start.X, start.Y) && !foundExact && cameFrom.Count == 0)
         {
             return start;
         }
 
-        // Cible = soit end (si trouvée), soit la tuile atteignable la plus proche de end
         var target = foundExact ? (end.X, end.Y) : bestReachable;
 
         if (target == (start.X, start.Y))
