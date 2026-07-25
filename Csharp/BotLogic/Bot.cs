@@ -24,7 +24,7 @@ public class Bot : IBot
             .FirstOrDefault();
 
         // return new DestroyStructureAction(new Position(141, 324));
-        // return new PlaceExtractorAction(new Position(141, 324));
+        // return new PlaceExtractorAction(new Position(184, 288));
         // return new MoveAction(new Position(state.Bot.Position.X, state.Bot.Position.Y + 1));
         // Position new_p = Moving.GoTo(bot.Position, new Position(141, 324), state.VisibleTiles);
         // return new MoveAction(new_p);
@@ -38,7 +38,7 @@ public class Bot : IBot
 
         if (Moving.ManhattanDist(bot.Position, target.Position) > 1)
         {
-            Position new_p = Moving.GoTo(bot.Position, new Position(161, 329), state.VisibleTiles);
+            Position new_p = Moving.GoTo(bot.Position, new Position(184, 288), state.VisibleTiles);
             return new MoveAction(new_p);
         }
         else if (bot.Inventory.Any(item => item.Quantity >= 30))
