@@ -18,3 +18,10 @@ soda, 185, 348
 gelatin, 213, 306
 nut, 209, 318
 sugar_cane, 216, 312
+milk_chocolate, 195, 314
+corn_syrup, 194, 312
+white_chocolate, 193, 306
+milk_chocolate, 206, 286
+soda, 212, 290
+maple_syrup, 191, 287
+sugar_cane, 220, 323

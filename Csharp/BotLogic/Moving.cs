@@ -68,36 +68,49 @@ public class Moving
 
         var directions = new (int idx, int idy)[]
         {
-            (0, -1), (0, 1), (-1, 0), (1, 0)
+            (0, -1), // Up
+            (0, 1),  // Down
+            (-1, 0), // Left
+            (1, 0)   // Right
         };
 
-        var startKey = (start.X, start.Y);
-        var endKey = (end.X, end.Y);
-
-        var visited = new HashSet<(int, int)> { startKey };
+        var visited = new HashSet<(int, int)> { (start.X, start.Y) };
         var cameFrom = new Dictionary<(int, int), (int, int)>();
         var queue = new Queue<(int x, int y)>();
-        queue.Enqueue(startKey);
-        bool found = false;
+        queue.Enqueue((start.X, start.Y));
+
+        bool foundExact = false;
+        (int x, int y) bestReachable = (start.X, start.Y);
+        double bestDist = double.MaxValue;
 
         while (queue.Count > 0)
         {
             var current = queue.Dequeue();
-            if (current == endKey)
+
+            // Distance de cette tuile atteignable par rapport à la cible réelle
+            double dist = Math.Sqrt(Math.Pow(current.x - end.X, 2) + Math.Pow(current.y - end.Y, 2));
+            if (dist < bestDist)
             {
-                found = true;
+                bestDist = dist;
+                bestReachable = current;
+            }
+
+            if (current == (end.X, end.Y))
+            {
+                foundExact = true;
                 break;
             }
 
             foreach (var (dx, dy) in directions)
             {
-                var next = (current.Item1 + dx, current.Item2 + dy);
+                var next = (current.x + dx, current.y + dy);
                 if (visited.Contains(next))
                     continue;
 
-                // Case inconnue ou impraticable => on ne l'explore pas
+                // On ne peut explorer QUE ce qu'on voit ; hors zone visible = frontière, on n'avance pas plus loin
                 if (!visibleTiles.TryGetValue(next, out Tile tile))
                     continue;
+
                 if (tile.TerrainCategory == "Liquid" || tile.HasStructure)
                     continue;
 
@@ -107,31 +120,27 @@ public class Moving
             }
         }
 
-        if (!found)
+        // Rien d'atteignable autour de start (même pas un pas) -> on reste sur place plutôt que de foncer dans un mur
+        if (bestReachable == (start.X, start.Y) && !foundExact && cameFrom.Count == 0)
         {
-            return GoToNaive(start, end);
+            return start;
         }
 
-        // Reconstruction du chemin depuis end vers start
-        var step = endKey;
-        while (cameFrom.TryGetValue(step, out var prev) && prev != startKey)
+        // Cible = soit end (si trouvée), soit la tuile atteignable la plus proche de end
+        var target = foundExact ? (end.X, end.Y) : bestReachable;
+
+        if (target == (start.X, start.Y))
         {
-            step = prev;
+            return start;
+        }
+
+        var step = target;
+        while (cameFrom.ContainsKey(step) && cameFrom[step] != (start.X, start.Y))
+        {
+            step = cameFrom[step];
         }
 
         return new Position(step.Item1, step.Item2);
-    }
-
-    public static Position GoToNaive(Position p1, Position p2)
-    {
-        if (p1.X == p2.X)
-        {
-            return p1.Y > p2.Y ? new Position(p1.X, p1.Y - 1) : new Position(p1.X, p1.Y + 1);
-        }
-        else
-        {
-            return p1.X > p2.X ? new Position(p1.X - 1, p1.Y) : new Position(p1.X + 1, p1.Y);
-        }
     }
 
     public static Position GoToResource(Position p, string resourceName) {

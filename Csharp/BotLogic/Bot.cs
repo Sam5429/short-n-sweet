@@ -56,15 +56,17 @@ public class Bot : IBot
             LogResource(resource);
         }
 
-        string resourceName = "gelatin";
+        string resourceName = "sugar_cane";
+
 
         Position target = Moving.GoToResource(bot.Position, resourceName);
-        target = Moving.GoTo(bot.Position, target, state.VisibleTiles);
-
+        Console.WriteLine($"{target}");
+        Console.WriteLine($"{bot.Position}");
         if (Moving.ManhattanDist(bot.Position, target) > 1) {
             target = Moving.GoTo(bot.Position, target, state.VisibleTiles);
             return new MoveAction(target);
         } else {
+            return new GatherNodeAction(target);
             return new PlaceExtractorAction(target);
         }
 
