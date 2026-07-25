@@ -42,12 +42,13 @@ public class Moving
 
             foreach (var (dx, dy) in directions)
             {
+
                 var next = (current.Item1 + dx, current.Item2 + dy);
 
                 if (visited.Contains(next))
                     continue;
 
-                if (visibleTiles.TryGetValue(next, out Tile tile) && tile.TerrainCategory == "Liquid")
+                if (visibleTiles.TryGetValue(next, out Tile tile) && (tile.TerrainCategory == "Liquid" || tile.HasStructure))
                     continue;
 
                 visited.Add(next);

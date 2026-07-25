@@ -23,23 +23,25 @@ public class Bot : IBot
             .OrderBy(r => Moving.ManhattanDist(bot.Position, r.Position))
             .FirstOrDefault();
 
-        return new MoveAction(new Position(state.Bot.Position.X + 1, state.Bot.Position.Y));
-        // Position new_p = Moving.GoTo(bot.Position, new Position(189, 327), state.VisibleTiles);
+        // return new DestroyStructureAction(new Position(141, 324));
+        // return new PlaceExtractorAction(new Position(141, 324));
+        // return new MoveAction(new Position(state.Bot.Position.X, state.Bot.Position.Y + 1));
+        // Position new_p = Moving.GoTo(bot.Position, new Position(141, 324), state.VisibleTiles);
         // return new MoveAction(new_p);
 
-        foreach (KeyValuePair<(int, int), Tile> pair in state.VisibleTiles)
-        {
-            Tile tile = pair.Value;
-            if (tile.TerrainCategory == "Liquid")
-                Console.WriteLine($"{tile.TerrainCategory}");
-        }
+        // foreach (KeyValuePair<(int, int), Tile> pair in state.VisibleTiles)
+        // {
+        //     Tile tile = pair.Value;
+        //     if (tile.TerrainCategory == "Liquid")
+        //         Console.WriteLine($"{tile.TerrainCategory}");
+        // }
 
         if (Moving.ManhattanDist(bot.Position, target.Position) > 1)
         {
-            // Position new_p = Moving.GoTo(bot.Position, new Position(141, 329), state.VisibleTiles);
-            // return new MoveAction(new_p);
+            Position new_p = Moving.GoTo(bot.Position, new Position(161, 329), state.VisibleTiles);
+            return new MoveAction(new_p);
         }
-        else if (bot.Inventory.Any(item => item.Quantity >= 50))
+        else if (bot.Inventory.Any(item => item.Quantity >= 30))
         {
             Console.WriteLine($"Companion");
             return new SendCompanionAction();
