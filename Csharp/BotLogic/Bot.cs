@@ -36,7 +36,7 @@ public class Bot : IBot
         //         Console.WriteLine($"{tile.TerrainCategory}");
         // }
 
-        if (Moving.ManhattanDist(bot.Position, target.Position) > 1)
+        if (Moving.ManhattanDist(bot.Poassition, target.Position) > 1)
         {
             Position new_p = Moving.GoTo(bot.Position, new Position(184, 288), state.VisibleTiles);
             return new MoveAction(new_p);
