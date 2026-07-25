@@ -5,11 +5,38 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Reflection;
 using Csharp.Moving;
+using System.IO;
 
 public class Bot : IBot
 {
     // EDIT THIS FOR YOUR OWN BOT TOKEN
     public const string TOKEN = "BOTA-YTkR-hUVS-BRFB";
+
+    private static readonly string LogPath = "bot_log.txt";
+
+    private static void LogResource(Resource r)
+    {
+        string line = $"{r.Name}, {r.Position.X}, {r.Position.Y}";
+
+        if (File.Exists(LogPath))
+        {
+            var existingLines = File.ReadAllLines(LogPath);
+            foreach (var existing in existingLines)
+            {
+                var parts = existing.Split(',');
+                if (parts.Length >= 3
+                    && int.TryParse(parts[1].Trim(), out int x)
+                    && int.TryParse(parts[2].Trim(), out int y)
+                    && x == r.Position.X
+                    && y == r.Position.Y)
+                {
+                    return; // déjà loguée
+                }
+            }
+        }
+
+        File.AppendAllText(LogPath, line + Environment.NewLine);
+    }
 
     public ActionBase? GetNextAction(GameState state)
     {
@@ -18,42 +45,44 @@ public class Bot : IBot
         //     Console.WriteLine($"{resources.Position}");
         // }
         PlayerInfo bot = state.Bot;
-        Resource target = state.VisibleResources
-            .Where(r => r.CurrentAmount > 0)
-            .OrderBy(r => Moving.ManhattanDist(bot.Position, r.Position))
-            .FirstOrDefault();
+        //Resource target = state.VisibleResources.FirstOrDefault(r => r.CurrentAmount > 0);
+        // BaseInfo target = state.Base;
 
-        // return new DestroyStructureAction(new Position(213, 287));
-        // return new PlacePumpAction(new Position(213, 290));
-        // return new PlaceRadarAction(new Position(state.Bot.Position.X + 1, state.Bot.Position.Y));
-        // return new MoveAction(new Position(state.Bot.Position.X, state.Bot.Position.Y + 1));
-        Console.WriteLine($"Bot Position: {state.Base.Position}");
-        Position new_pp = Moving.GoTo(bot.Position, new Position(163, 323), state.VisibleTiles);
-        return new MoveAction(new_pp);
-
-        // // foreach (KeyValuePair<(int, int), Tile> pair in state.VisibleTiles)
-        // // {
-        // //     Tile tile = pair.Value;
-        // //     if (tile.TerrainCategory == "Liquid")
-        // //         Console.WriteLine($"{tile.TerrainCategory}");
-        // // }
-
-        if (Moving.ManhattanDist(bot.Position, target.Position) > 1)
+        // Console.WriteLine($"{bot.Position}");
+        // Console.WriteLine($"{target.Position}");
+        // regarde si chaque ressource trouver a un radar proche
+        foreach (Resource resource in state.VisibleResources)
         {
-            Console.WriteLine($"move");
-            // return new MoveAction(new Position(state.Bot.Position.X + 1, state.Bot.Position.Y));
-            Position new_p = Moving.GoTo(bot.Position, target.Position, state.VisibleTiles);
-            return new MoveAction(new_p);
+            LogResource(resource);
         }
-        else if (bot.Inventory.Any(item => item.Quantity >= 50))
+
+        string resourceName = "mint";
+
+
+        Position target = Moving.GoToResource(bot.Position, resourceName);
+        // return new RespawnAction();
+        // return new PlacePumpAction(target);
+        // Position target = state.Base.Position;
+        Console.WriteLine($"{bot.Position}");
+        Console.WriteLine($"{target}");
+        // return new SendCompanionAction();
+        // return new MoveAction(new Position(bot.Position.X, bot.Position.Y - 1));
+        if (Moving.ManhattanDist(bot.Position, target) > 1)
         {
-            Console.WriteLine($"Companion");
+            // return new GatherNodeAction(target);
+            target = Moving.GoTo(bot.Position, target);
+            return new MoveAction(target);
+        }
+        else if (bot.Inventory.Any(item => item.Quantity >= 30))
+        {
             return new SendCompanionAction();
         }
         else
         {
-            Console.WriteLine($"Gathering");
-            return new GatherNodeAction(target.Position);
+            return new GatherNodeAction(target);
+            return new PlaceExtractorAction(target);
         }
+
+        return new MoveAction(target);
     }
 }
