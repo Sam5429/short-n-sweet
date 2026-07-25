@@ -1,28 +1,23 @@
-﻿# Starterkit Python - Bot JDIS Games 2026
+# Starterkit C# - Bot JDIS Games 2026
 
-Ce starterkit permet de lancer un bot Python connecté au serveur.
+Ce starterkit permet de lancer un bot C# connecté au serveur.
 
 Le fichier principal à modifier est:
 
 ```text
-bot.py
+BotLogic/Bot.cs
 ```
 
 ## Prérequis
 
-- Installer Python 3.11 ou plus récent.
-- Installer les dépendances du starterkit.
-
-```powershell
-pip install -r requirements.txt
-```
+- Installer le SDK .NET 9.0.
 
 ## 1. Configurer le bot
 
-Dans `bot.py`, le bot utilise une constante de token:
+Dans `BotLogic/Bot.cs`, le bot utilise une constante de token:
 
-```python
-TOKEN = "BOTA-abcd-1234-ABCD"
+```csharp
+public const string TOKEN = "BOTA-abcd-1234-ABCD";
 ```
 
 Remplacez cette valeur par le token de votre bot.
@@ -32,62 +27,64 @@ Remplacez cette valeur par le token de votre bot.
 Depuis le dossier du starterkit:
 
 ```powershell
-cd starterkits\Python
-python main.py
+cd starterkits\Csharp
+dotnet run
 ```
 
 ## 3. Modifier le comportement
 
 Cette méthode est appelée à chaque tick. Elle doit retourner une action qui sera envoyée au serveur pour manipuler le bot.
 
-```python
-def get_next_action(self, state: GameState) -> ActionBase | None:
+```csharp
+public ActionBase? GetNextAction(GameState state)
 ```
 
 ### Exemple: se déplacer à droite
 
-```python
-def get_next_action(self, state: GameState) -> ActionBase | None:
-    return MoveAction(Position(state.Bot.Position.X + 1, state.Bot.Position.Y))
+```csharp
+public ActionBase? GetNextAction(GameState state)
+{
+    return new MoveAction(new Position(state.Bot.Position.X + 1, state.Bot.Position.Y));
+}
 ```
 
 ### Exemple: récolter une ressource visible
 
-```python
-def get_next_action(self, state: GameState) -> ActionBase | None:
-    resource = next((r for r in state.VisibleResources if r.CurrentAmount > 0), None)
-    if resource is None:
-        return None
+```csharp
+public ActionBase? GetNextAction(GameState state)
+{
+    var resource = state.VisibleResources.FirstOrDefault(r => r.CurrentAmount > 0);
 
-    return GatherNodeAction(resource.Position)
+    return new GatherNodeAction(resource.Position);
+}
 ```
 
 ### Exemple: placer un extracteur
 
-```python
-def get_next_action(self, state: GameState) -> ActionBase | None:
-    node = next((r for r in state.VisibleResources if r.CanHostExtractor), None)
-    if node is None:
-        return None
+```csharp
+public ActionBase? GetNextAction(GameState state)
+{
+    var node = state.VisibleResources.FirstOrDefault(r => r.CanHostExtractor);
 
-    return PlaceExtractorAction(node.Position)
+    return new PlaceExtractorAction(node.Position);
+}
 ```
 
 ## 4. Actions possibles
 
 | Commande | Ce que ça fait |
 | --- | --- |
-| `MoveAction(Position new_position)` | Déplace le bot vers une position cible. |
-| `GatherNodeAction(Position gather_position)` | Récolte une node de ressource visible à la position cible. |
-| `AttackAction(Position target_position)` | Attaque un bot ou un companion à la position cible. Les règles de PVP et de safezone sont validées par le serveur. |
+| `MoveAction(Position newPosition)` | Déplace le bot vers une position cible. |
+| `GatherNodeAction(Position gatherPosition)` | Récolte une node de ressource visible à la position cible. |
+| `AttackAction(Position targetPosition)` | Attaque un bot ou un companion à la position cible. Les règles de PVP et de safezone sont validées par le serveur. |
 | `DepositToBaseAction()` | Dépose l'inventaire du bot dans le stockage de la base lorsque le bot est à la base. |
-| `WithdrawFromBaseAction(str item_name, int item_quantity)` | Retire des items du stockage de la base vers l'inventaire du bot. |
+| `WithdrawFromBaseAction(string itemName, int itemQuantity)` | Retire des items du stockage de la base vers l'inventaire du bot. |
 | `SendCompanionAction()` | Envoie un companion disponible pour rapporter une partie de l'inventaire du bot vers la base. |
-| `PlaceExtractorAction(Position target_node_position)` | Place un extracteur sur une node compatible visible. |
-| `PlacePumpAction(Position target_node_position)` | Place une pompe sur une node liquide compatible visible. |
-| `PlaceRadarAction(Position target_position)` | Place un radar à la position cible. |
-| `DestroyStructureAction(Position structure_position)` | Endommage ou détruit une structure externe: extracteur, pompe ou radar. |
-| `AddItemToMuseumPedestalAction(int slot_index, str item_name, int quantity)` | Ajoute des items du stockage sur un piédestal du musée. |
+| `PlaceExtractorAction(Position targetNodePosition)` | Place un extracteur sur une node compatible visible. |
+| `PlacePumpAction(Position targetNodePosition)` | Place une pompe sur une node liquide compatible visible. |
+| `PlaceRadarAction(Position targetPosition)` | Place un radar à la position cible. |
+| `DestroyStructureAction(Position structurePosition)` | Endommage ou détruit une structure externe: extracteur, pompe ou radar. |
+| `AddItemToMuseumPedestalAction(int slotIndex, string itemName, int quantity)` | Ajoute des items du stockage sur un piédestal du musée. |
 | `RespawnAction()` | Demande un respawn lorsque le bot est mort et que son cooldown est terminé. |
 
 ## 5. Informations disponibles

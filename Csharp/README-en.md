@@ -1,100 +1,97 @@
-# Python Starterkit - JDIS Games 2026 Bot
+# C# Starterkit - JDIS Games 2026 Bot
 
-This starterkit lets you run a Python bot connected to the server.
+This starterkit lets you run a C# bot connected to the server.
 
 The main file to modify is:
 
 ```text
-bot.py
+BotLogic/Bot.cs
 ```
 
 ## Requirements
 
-- Install Python 3.11 or newer.
-- Install starterkit dependencies.
+- Install the .NET 9.0 SDK.
 
-```powershell
-pip install -r requirements.txt
-```
+## 1. Configure the bot
 
-## 1. Configure the Bot
+In `BotLogic/Bot.cs`, the bot uses a token constant:
 
-In `bot.py`, the bot uses a token constant:
-
-```python
-TOKEN = "BOTA-abcd-1234-ABCD"
+```csharp
+public const string TOKEN = "BOTA-abcd-1234-ABCD";
 ```
 
 Replace this value with your bot token.
 
-## 2. Run the Bot
+## 2. Run the bot
 
 From the starterkit folder:
 
 ```powershell
-cd starterkits\Python
-python main.py
+cd starterkits\Csharp
+dotnet run
 ```
 
-## 3. Modify the Behavior
+## 3. Modify the behavior
 
-This method is called on every tick. It must return an action that will be sent to the server to control the bot.
+This method is called every tick. It must return an action that will be sent to the server to control the bot.
 
-```python
-def get_next_action(self, state: GameState) -> ActionBase | None:
+```csharp
+public ActionBase? GetNextAction(GameState state)
 ```
 
 ### Example: move right
 
-```python
-def get_next_action(self, state: GameState) -> ActionBase | None:
-    return MoveAction(Position(state.Bot.Position.X + 1, state.Bot.Position.Y))
+```csharp
+public ActionBase? GetNextAction(GameState state)
+{
+    return new MoveAction(new Position(state.Bot.Position.X + 1, state.Bot.Position.Y));
+}
 ```
 
 ### Example: gather a visible resource
 
-```python
-def get_next_action(self, state: GameState) -> ActionBase | None:
-    resource = next((r for r in state.VisibleResources if r.CurrentAmount > 0), None)
-    if resource is None:
-        return None
+```csharp
+public ActionBase? GetNextAction(GameState state)
+{
+    var resource = state.VisibleResources.FirstOrDefault(r => r.CurrentAmount > 0);
 
-    return GatherNodeAction(resource.Position)
+    return new GatherNodeAction(resource.Position);
+}
 ```
 
 ### Example: place an extractor
 
-```python
-def get_next_action(self, state: GameState) -> ActionBase | None:
-    node = next((r for r in state.VisibleResources if r.CanHostExtractor), None)
-    if node is None:
-        return None
+```csharp
+public ActionBase? GetNextAction(GameState state)
+{
+    var node = state.VisibleResources.FirstOrDefault(r => r.CanHostExtractor);
 
-    return PlaceExtractorAction(node.Position)
+    return new PlaceExtractorAction(node.Position);
+}
 ```
 
-## 4. Available Actions
+## 4. Available actions
 
 | Command | What it does |
 | --- | --- |
-| `MoveAction(Position new_position)` | Moves the bot to a target position. |
-| `GatherNodeAction(Position gather_position)` | Gathers a visible resource node at the target position. |
-| `AttackAction(Position target_position)` | Attacks a bot or companion at the target position. PVP and safe zone rules are validated by the server. |
+| `MoveAction(Position newPosition)` | Moves the bot toward a target position. |
+| `GatherNodeAction(Position gatherPosition)` | Gathers a visible resource node at the target position. |
+| `AttackAction(Position targetPosition)` | Attacks a bot or companion at the target position. PVP and safezone rules are validated by the server. |
 | `DepositToBaseAction()` | Deposits the bot inventory into base storage when the bot is at the base. |
-| `WithdrawFromBaseAction(str item_name, int item_quantity)` | Withdraws items from base storage into the bot inventory. |
+| `WithdrawFromBaseAction(string itemName, int itemQuantity)` | Withdraws items from base storage into the bot inventory. |
 | `SendCompanionAction()` | Sends an available companion to bring part of the bot inventory back to base. |
-| `PlaceExtractorAction(Position target_node_position)` | Places an extractor on a compatible visible node. |
-| `PlacePumpAction(Position target_node_position)` | Places a pump on a compatible visible liquid node. |
-| `PlaceRadarAction(Position target_position)` | Places a radar at the target position. |
-| `DestroyStructureAction(Position structure_position)` | Damages or destroys an external structure: extractor, pump, or radar. |
-| `AddItemToMuseumPedestalAction(int slot_index, str item_name, int quantity)` | Adds items from storage onto a museum pedestal. |
-| `RespawnAction()` | Requests a respawn when the bot is dead and its cooldown is over. |
+| `PlaceExtractorAction(Position targetNodePosition)` | Places an extractor on a visible compatible node. |
+| `PlacePumpAction(Position targetNodePosition)` | Places a pump on a visible compatible liquid node. |
+| `PlaceRadarAction(Position targetPosition)` | Places a radar at the target position. |
+| `DestroyStructureAction(Position structurePosition)` | Damages or destroys an external structure: extractor, pump, or radar. |
+| `AddItemToMuseumPedestalAction(int slotIndex, string itemName, int quantity)` | Adds items from storage onto a museum pedestal. |
+| `RespawnAction()` | Requests a respawn when the bot is dead and its cooldown is finished. |
 
-## 5. Available Information
+## 5. Available information
 
-The starterkit receives limited vision. It does not receive the whole map.
+The starterkit receives limited vision. It does not receive the full map.
 
-### Main State
+### Main state
 
 | Class | Available information |
 | --- | --- |
@@ -102,16 +99,16 @@ The starterkit receives limited vision. It does not receive the whole map.
 | `Position` | `X`, `Y` |
 | `ItemStack` | `ItemName`, `Quantity` |
 
-### Map and Vision
+### Map and vision
 
 | Class | Available information |
 | --- | --- |
 | `Tile` | `Position`, `Terrain`, `TerrainCategory`, `Zone`, `ZoneOwnerTeamId`, `HasStructure`, `HasEntity`, `HasResource` |
 | `Resource` | `Id`, `Name`, `LootItem`, `Description`, `Position`, `CurrentAmount`, `Capacity`, `RemainingTicks`, `CanHostExtractor`, `CanHostPump` |
 
-`Tile.Zone` tells you if a tile is in a war zone, safe zone, or base zone. `ZoneOwnerTeamId` tells you which team owns that zone when applicable.
+`Tile.Zone` indicates whether a tile is in a war zone, safezone, or base zone. `ZoneOwnerTeamId` indicates which team owns that zone when applicable.
 
-### Players and Companions
+### Players and companions
 
 | Class | Available information |
 | --- | --- |
@@ -119,7 +116,7 @@ The starterkit receives limited vision. It does not receive the whole map.
 | `VisiblePlayer` | `PlayerId`, `TeamId`, `BotType`, `IsAlly`, `IsSelf`, `PvpActivated`, `Alive`, `RespawnRemainingTicks`, `Position`, `Health`, `MaxHealth`, `Shield`, `MaxShield`, `Slots`, `Inventory` |
 | `VisibleCompanion` | `CompanionId`, `TeamId`, `OwnerPlayerId`, `IsAlly`, `PvpActivated`, `Position`, `Health`, `MaxHealth`, `InventoryItemsCount` |
 
-### Structures and Base
+### Structures and base
 
 | Class | Available information |
 | --- | --- |
@@ -130,7 +127,7 @@ The starterkit receives limited vision. It does not receive the whole map.
 | `GeneratorJobInfo` | `Id`, `ItemName`, `TotalTicks`, `RemainingTicks`, `ItemPaid`, `Repeat`, `WaitingForItem` |
 | `MuseumPedestalInfo` | `SlotIndex`, `ItemName`, `Quantity`, `ValueBonus`, `MaxValueBonus` |
 
-### Team Progression
+### Team progression
 
 | Class | Available information |
 | --- | --- |
