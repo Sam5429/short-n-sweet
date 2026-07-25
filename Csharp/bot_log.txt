@@ -12,3 +12,6 @@ white_chocolate, 204, 294
 gelatin, 213, 287
 corn_syrup, 184, 288
 maple_syrup, 154, 347
+waffle, 161, 351
+mint, 168, 349
+soda, 185, 348
