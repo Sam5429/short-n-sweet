@@ -23,11 +23,13 @@ public class Bot : IBot
             .OrderBy(r => Moving.ManhattanDist(bot.Position, r.Position))
             .FirstOrDefault();
 
-        // // return new DestroyStructureAction(new Position(141, 324));
-        // return new PlacePumpAction(new Position(184, 288));
-        // // return new MoveAction(new Position(state.Bot.Position.X, state.Bot.Position.Y + 1));
-        // // Position new_p = Moving.GoTo(bot.Position, new Position(141, 324), state.VisibleTiles);
-        // // return new MoveAction(new_p);
+        // return new DestroyStructureAction(new Position(213, 287));
+        // return new PlacePumpAction(new Position(213, 290));
+        // return new PlaceRadarAction(new Position(state.Bot.Position.X + 1, state.Bot.Position.Y));
+        // return new MoveAction(new Position(state.Bot.Position.X, state.Bot.Position.Y + 1));
+        Console.WriteLine($"Bot Position: {state.Base.Position}");
+        Position new_pp = Moving.GoTo(bot.Position, new Position(163, 323), state.VisibleTiles);
+        return new MoveAction(new_pp);
 
         // // foreach (KeyValuePair<(int, int), Tile> pair in state.VisibleTiles)
         // // {
