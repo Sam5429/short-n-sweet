@@ -56,20 +56,84 @@ public class Bot : IBot
             LogResource(resource);
         }
 
-        string resourceName = "sugar_cane";
+        // string resourceName = "maple_syrup";
+
+        // // return new MoveAction(Moving.GoTo(bot.Position, state.Base.Position, state.VisibleTiles));
+        // Position target = new Position(191, 287);
+
+        // // // return new SendCompanionAction();
+
+        // // Position target = Moving.GoToResource(bot.Position, resourceName);
+        // // return new MoveAction(new Position(bot.Position.X + 1, bot.Position.Y));
+        // Console.WriteLine($"{target}");
+        // Console.WriteLine($"{bot.Position}");
+        // if (Moving.ManhattanDist(bot.Position, target) > 1)
+        // {
+        //     target = Moving.GoTo(bot.Position, target, state.VisibleTiles);
+        //     return new MoveAction(target);
+        // }
+        // // else if (bot.Inventory[1].Quantity == 100)
+        // // {
+        // //     return new SendCompanionAction();
+        // // }
+        // else
+        // {
+        //     return new GatherNodeAction(target);
+        //     return new PlaceExtractorAction(target);
+        // }
 
 
-        Position target = Moving.GoToResource(bot.Position, resourceName);
-        Console.WriteLine($"{target}");
-        Console.WriteLine($"{bot.Position}");
-        if (Moving.ManhattanDist(bot.Position, target) > 1) {
-            target = Moving.GoTo(bot.Position, target, state.VisibleTiles);
-            return new MoveAction(target);
-        } else {
-            return new GatherNodeAction(target);
-            return new PlaceExtractorAction(target);
+
+        // return new SendCompanionAction();
+        // Position target = new Position(59, 188);
+        Position target = new Position(bot.Position.X-100 , bot.Position.Y);
+        // return new MoveAction(target);
+        if (bot.Health < 50)
+        {
+            return new RespawnAction();
         }
 
+
+        var visibleStructures = state.VisibleStructures.OrderBy(s => s.Hp).ToList();
+        foreach (var structure in visibleStructures)
+        {
+            if (structure.PvpActivated && !structure.IsAlly)
+            {
+                Console.WriteLine($"{structure.Position}");
+                target = structure.Position;
+                if (Moving.ManhattanDist(bot.Position, target) > 1)
+                {
+                    target = Moving.GoTo(bot.Position, target, state.VisibleTiles, state.VisibleResources);
+                    return new MoveAction(target);
+                }
+                else
+                {
+                    return new DestroyStructureAction(target);
+                }
+            }
+        }
+
+        var visiblePlayers = state.VisiblePlayers.OrderBy(s => s.Health).ToList();
+        foreach (var player in state.VisiblePlayers)
+        {
+            if (player.PvpActivated && !player.IsAlly)
+            {
+                target = player.Position;
+                Console.WriteLine($"{target}");
+                if (Moving.ManhattanDist(bot.Position, target) > 1)
+                {
+                    target = Moving.GoTo(bot.Position, target, state.VisibleTiles, state.VisibleResources);
+                    return new MoveAction(target);
+                }
+                else
+                {
+                    return new AttackAction(target);
+                }
+            }
+        }
+
+        target = Moving.GoTo(bot.Position, target, state.VisibleTiles, state.VisibleResources);
         return new MoveAction(target);
+
     }
 }
