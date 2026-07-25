@@ -59,7 +59,14 @@ public class Bot : IBot
         string resourceName = "gelatin";
 
         Position target = Moving.GoToResource(bot.Position, resourceName);
-        target = Moving.GoTo(bot.Position, target);
+        target = Moving.GoTo(bot.Position, target, state.VisibleTiles);
+
+        if (Moving.ManhattanDist(bot.Position, target) > 1) {
+            target = Moving.GoTo(bot.Position, target, state.VisibleTiles);
+            return new MoveAction(target);
+        } else {
+            return new PlaceExtractorAction(target);
+        }
 
         return new MoveAction(target);
     }

@@ -59,7 +59,70 @@ public class Moving
         return Math.Abs(p1.X - p2.X) + Math.Abs(p1.Y - p2.Y);
     }
 
-    public static Position GoTo(Position p1, Position p2)
+    public static Position GoTo(Position start, Position end, Dictionary<(int, int), Tile> visibleTiles)
+    {
+        if (start.X == end.X && start.Y == end.Y)
+        {
+            return start;
+        }
+
+        var directions = new (int idx, int idy)[]
+        {
+            (0, -1), (0, 1), (-1, 0), (1, 0)
+        };
+
+        var startKey = (start.X, start.Y);
+        var endKey = (end.X, end.Y);
+
+        var visited = new HashSet<(int, int)> { startKey };
+        var cameFrom = new Dictionary<(int, int), (int, int)>();
+        var queue = new Queue<(int x, int y)>();
+        queue.Enqueue(startKey);
+        bool found = false;
+
+        while (queue.Count > 0)
+        {
+            var current = queue.Dequeue();
+            if (current == endKey)
+            {
+                found = true;
+                break;
+            }
+
+            foreach (var (dx, dy) in directions)
+            {
+                var next = (current.Item1 + dx, current.Item2 + dy);
+                if (visited.Contains(next))
+                    continue;
+
+                // Case inconnue ou impraticable => on ne l'explore pas
+                if (!visibleTiles.TryGetValue(next, out Tile tile))
+                    continue;
+                if (tile.TerrainCategory == "Liquid" || tile.HasStructure)
+                    continue;
+
+                visited.Add(next);
+                cameFrom[next] = current;
+                queue.Enqueue(next);
+            }
+        }
+
+        if (!found)
+        {
+            return GoToNaive(start, end);
+        }
+
+        // Reconstruction du chemin depuis end vers start
+        var step = endKey;
+        while (cameFrom.TryGetValue(step, out var prev) && prev != startKey)
+        {
+            step = prev;
+        }
+
+        return new Position(step.Item1, step.Item2);
+    }
+
+    public static Position GoToNaive(Position p1, Position p2)
     {
         if (p1.X == p2.X)
         {

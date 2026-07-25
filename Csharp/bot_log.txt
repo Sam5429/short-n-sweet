@@ -15,3 +15,6 @@ maple_syrup, 154, 347
 waffle, 161, 351
 mint, 168, 349
 soda, 185, 348
+gelatin, 213, 306
+nut, 209, 318
+sugar_cane, 216, 312
