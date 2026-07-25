@@ -7,10 +7,10 @@ using System.Collections.Generic;
 public class Bot : IBot
 {
     // EDIT THIS FOR YOUR OWN BOT TOKEN
-    public const string TOKEN = "BOTA-abcd-1234-ABCD";
-    
+    public const string TOKEN = "BOTA-YTkR-hUVS-BRFB";
+
     public ActionBase? GetNextAction(GameState state)
-    {   
+    {
         return null; // Placeholder for the bot's logic implementation
     }
 }
