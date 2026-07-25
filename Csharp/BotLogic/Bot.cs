@@ -56,12 +56,12 @@ public class Bot : IBot
             LogResource(resource);
         }
 
-        string resourceName = "mint";
+        string resourceName = "soda";
 
 
         Position target = Moving.GoToResource(bot.Position, resourceName);
         // return new RespawnAction();
-        // return new PlacePumpAction(target);
+        // return new PlaceExtractorAction(target);
         // Position target = state.Base.Position;
         Console.WriteLine($"{bot.Position}");
         Console.WriteLine($"{target}");
@@ -70,7 +70,7 @@ public class Bot : IBot
         if (Moving.ManhattanDist(bot.Position, target) > 1)
         {
             // return new GatherNodeAction(target);
-            target = Moving.GoTo(bot.Position, target);
+            target = Moving.GoTo(bot.Position, target, state.VisibleTiles, state.VisibleResources);
             return new MoveAction(target);
         }
         else if (bot.Inventory.Any(item => item.Quantity >= 30))

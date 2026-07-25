@@ -59,16 +59,94 @@ public class Moving
         return Math.Abs(p1.X - p2.X) + Math.Abs(p1.Y - p2.Y);
     }
 
-    public static Position GoTo(Position p1, Position p2)
+    public static Position GoTo(Position start, Position end, Dictionary<(int, int), Tile> visibleTiles, List<Resource> visibleResources)
     {
-        if (p1.X == p2.X)
+        if (start.X == end.X && start.Y == end.Y)
         {
-            return p1.Y > p2.Y ? new Position(p1.X, p1.Y - 1) : new Position(p1.X, p1.Y + 1);
+            return start;
         }
-        else
+
+        // Conversion en HashSet de positions pour un lookup O(1) dans le BFS
+        var resourcePositions = new HashSet<(int, int)>(
+            visibleResources.Select(r => (r.Position.X, r.Position.Y))
+        );
+
+        var directions = new (int idx, int idy)[]
         {
-            return p1.X > p2.X ? new Position(p1.X - 1, p1.Y) : new Position(p1.X + 1, p1.Y);
+            (0, -1), // Up
+            (0, 1),  // Down
+            (-1, 0), // Left
+            (1, 0)   // Right
+        };
+
+        var visited = new HashSet<(int, int)> { (start.X, start.Y) };
+        var cameFrom = new Dictionary<(int, int), (int, int)>();
+        var queue = new Queue<(int x, int y)>();
+        queue.Enqueue((start.X, start.Y));
+
+        bool foundExact = false;
+        (int x, int y) bestReachable = (start.X, start.Y);
+        double bestDist = double.MaxValue;
+
+        while (queue.Count > 0)
+        {
+            var current = queue.Dequeue();
+
+            double dist = Math.Sqrt(Math.Pow(current.x - end.X, 2) + Math.Pow(current.y - end.Y, 2));
+            if (dist < bestDist)
+            {
+                bestDist = dist;
+                bestReachable = current;
+            }
+
+            if (current == (end.X, end.Y))
+            {
+                foundExact = true;
+                break;
+            }
+
+            foreach (var (dx, dy) in directions)
+            {
+                var next = (current.x + dx, current.y + dy);
+                if (visited.Contains(next))
+                    continue;
+
+                // On ne peut explorer QUE ce qu'on voit ; hors zone visible = frontière, on n'avance pas plus loin
+                if (!visibleTiles.TryGetValue(next, out Tile tile))
+                    continue;
+
+                if (tile.TerrainCategory != "Land" || tile.HasStructure || tile.HasEntity)
+                    continue;
+
+                // Une ressource visible sur la case bloque aussi le passage
+                if (resourcePositions.Contains(next))
+                    continue;
+
+                visited.Add(next);
+                cameFrom[next] = current;
+                queue.Enqueue(next);
+            }
         }
+
+        if (bestReachable == (start.X, start.Y) && !foundExact && cameFrom.Count == 0)
+        {
+            return start;
+        }
+
+        var target = foundExact ? (end.X, end.Y) : bestReachable;
+
+        if (target == (start.X, start.Y))
+        {
+            return start;
+        }
+
+        var step = target;
+        while (cameFrom.ContainsKey(step) && cameFrom[step] != (start.X, start.Y))
+        {
+            step = cameFrom[step];
+        }
+
+        return new Position(step.Item1, step.Item2);
     }
 
     public static Position GoToResource(Position p, string resourceName)
